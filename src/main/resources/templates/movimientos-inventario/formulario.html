@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Movimiento | Farmacia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">💊</div>
+            <span>FARMACIA</span>
+        </div>
+        <nav class="nav-menu">
+            <a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a>
+            <a class="nav-link" th:href="@{/productos}">💊 Productos</a>
+            <a class="nav-link active" th:href="@{/movimientos-inventario}">📦 Inventario</a>
+        </nav>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn btn-secondary" type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="topbar">
+            <h1>Movimiento de inventario</h1>
+            <div class="user-chip">
+                <span class="user-avatar">M</span>
+                <span th:text="${#authentication.name}">usuario</span>
+            </div>
+        </header>
+
+        <div class="page-card">
+            <form th:action="@{/movimientos-inventario}" th:object="${movimientoInventario}" method="post" class="form-grid">
+                <div class="form-group">
+                    <label for="idProducto">Producto</label>
+                    <input id="idProducto" type="number" th:field="*{idProducto}" />
+                </div>
+                <div class="form-group">
+                    <label for="idUsuario">Usuario</label>
+                    <input id="idUsuario" type="number" th:field="*{idUsuario}" />
+                </div>
+                <div class="form-group">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" th:field="*{tipo}">
+                        <option value="ENTRADA">Entrada</option>
+                        <option value="SALIDA">Salida</option>
+                        <option value="AJUSTE">Ajuste</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input id="cantidad" type="number" th:field="*{cantidad}" />
+                </div>
+                <div class="form-group">
+                    <label for="descripcionMovimiento">Descripción</label>
+                    <textarea id="descripcionMovimiento" rows="4" th:field="*{descripcion}"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <a class="btn btn-secondary" th:href="@{/movimientos-inventario}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
