@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/** Implementación temporal de {@link CategoriaDAO} basada en memoria. */
 @Repository
 public class CategoriaDAOImpl implements CategoriaDAO {
 

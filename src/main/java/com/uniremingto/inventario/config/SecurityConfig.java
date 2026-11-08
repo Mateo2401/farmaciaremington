@@ -12,10 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+/** Define autenticación de demostración y autorización por rol. */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /** Configura las rutas protegidas, el formulario de acceso y el cierre de sesión. */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -37,6 +39,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /** Crea los usuarios temporales de demostración almacenados en memoria. */
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails admin = User.builder()
@@ -54,6 +57,7 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(admin, vendedor);
     }
 
+    /** Proporciona BCrypt para codificar las contraseñas de demostración. */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

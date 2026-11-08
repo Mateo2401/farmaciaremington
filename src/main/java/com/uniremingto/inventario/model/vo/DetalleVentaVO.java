@@ -2,6 +2,7 @@ package com.uniremingto.inventario.model.vo;
 
 import java.math.BigDecimal;
 
+/** Transporta una línea de venta, sus cantidades, precios y subtotal. */
 public class DetalleVentaVO {
 
     private Integer idDetalle;

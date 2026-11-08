@@ -10,6 +10,7 @@ import com.uniremingto.inventario.model.dao.ProveedorDAO;
 import com.uniremingto.inventario.model.dao.UsuarioDAO;
 import com.uniremingto.inventario.model.dao.VentaDAO;
 import com.uniremingto.inventario.model.vo.ProductoVO;
+import com.uniremingto.inventario.model.vo.ProveedorVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -137,6 +138,25 @@ class MvcControllersMockMvcTest {
         verify(proveedorDAO).save(any());
         verify(proveedorDAO).deleteById(4);
     }
+
+        @Test
+        void proveedorNuevoSeEnlazaAlFormularioYSeEnviaAlDao() throws Exception {
+                mockMvc.perform(post("/proveedores")
+                                                .param("nombre", "Distribuidora de prueba")
+                                                .param("telefono", "3001234567")
+                                                .param("correo", "proveedor@test.com")
+                                                .param("direccion", "Calle 10")
+                                                .param("estado", "true"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/proveedores"))
+                                .andExpect(flash().attribute("mensaje", "El proveedor fue guardado."));
+
+                ArgumentCaptor<ProveedorVO> captor = ArgumentCaptor.forClass(ProveedorVO.class);
+                verify(proveedorDAO).save(captor.capture());
+                assertEquals("Distribuidora de prueba", captor.getValue().getNombre());
+                assertEquals("proveedor@test.com", captor.getValue().getCorreo());
+                assertEquals(true, captor.getValue().getEstado());
+        }
 
     @Test
     void usuariosRenderizanVistasYDeleganCrud() throws Exception {

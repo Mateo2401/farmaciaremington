@@ -1,5 +1,6 @@
 package com.uniremingto.inventario.model.vo;
 
+/** Transporta el identificador, nombre y descripción de una categoría. */
 public class CategoriaVO {
 
     private Integer idCategoria;

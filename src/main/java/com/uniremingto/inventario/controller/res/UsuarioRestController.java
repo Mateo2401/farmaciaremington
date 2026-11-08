@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para usuarios. */
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioRestController {
@@ -25,11 +26,13 @@ public class UsuarioRestController {
         this.usuarioDAO = usuarioDAO;
     }
 
+    /** Devuelve todos los usuarios. */
     @GetMapping
     public List<UsuarioVO> listarUsuarios() {
         return usuarioDAO.findAll();
     }
 
+    /** Busca un usuario y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioVO> obtenerUsuario(@PathVariable Integer id) {
         return usuarioDAO.findById(id)
@@ -37,12 +40,14 @@ public class UsuarioRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea un usuario y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<UsuarioVO> crearUsuario(@RequestBody UsuarioVO usuario) {
         UsuarioVO guardado = usuarioDAO.save(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    /** Actualiza el usuario indicado por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioVO> actualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioVO usuario) {
         usuario.setIdUsuario(id);
@@ -50,6 +55,7 @@ public class UsuarioRestController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /** Elimina el usuario o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Integer id) {
         boolean eliminado = usuarioDAO.deleteById(id);

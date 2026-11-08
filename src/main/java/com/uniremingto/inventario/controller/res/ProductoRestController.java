@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para consultar y administrar productos. */
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoRestController {
@@ -25,11 +26,13 @@ public class ProductoRestController {
         this.productoDAO = productoDAO;
     }
 
+    /** Devuelve los productos persistidos. */
     @GetMapping
     public List<ProductoVO> listarProductos() {
         return productoDAO.findAll();
     }
 
+    /** Busca un producto y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<ProductoVO> obtenerProducto(@PathVariable Integer id) {
         return productoDAO.findById(id)
@@ -37,12 +40,14 @@ public class ProductoRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Inserta un producto y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<ProductoVO> crearProducto(@RequestBody ProductoVO producto) {
         ProductoVO guardado = productoDAO.save(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    /** Actualiza el ID del producto desde la ruta y persiste sus cambios. */
     @PutMapping("/{id}")
     public ResponseEntity<ProductoVO> actualizarProducto(@PathVariable Integer id, @RequestBody ProductoVO producto) {
         producto.setIdProducto(id);
@@ -50,6 +55,7 @@ public class ProductoRestController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /** Elimina el producto o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Integer id) {
         boolean eliminado = productoDAO.deleteById(id);

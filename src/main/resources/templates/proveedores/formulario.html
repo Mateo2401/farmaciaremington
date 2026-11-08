@@ -35,22 +35,26 @@
         </header>
 
         <div class="page-card">
-            <form th:action="@{/proveedores}" th:object="${proveedor}" method="post" class="form-grid">
+            <div th:if="${formError}" class="alert alert-error" th:text="${formError}"></div>
+            <form th:action="${proveedor.idProveedor == null} ? @{/proveedores} : @{/proveedores/{id}(id=${proveedor.idProveedor})}"
+                  th:object="${proveedor}" method="post" class="form-grid">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                 <div class="form-group">
                     <label for="nombreProveedor">Nombre</label>
-                    <input id="nombreProveedor" type="text" th:field="*{nombre}" />
+                    <input id="nombreProveedor" type="text" th:field="*{nombre}" maxlength="120" required />
+                    <small class="muted" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
                 </div>
                 <div class="form-group">
                     <label for="telefonoProveedor">Teléfono</label>
-                    <input id="telefonoProveedor" type="text" th:field="*{telefono}" />
+                    <input id="telefonoProveedor" type="text" th:field="*{telefono}" maxlength="20" />
                 </div>
                 <div class="form-group">
                     <label for="correoProveedor">Correo</label>
-                    <input id="correoProveedor" type="email" th:field="*{correo}" />
+                    <input id="correoProveedor" type="email" th:field="*{correo}" maxlength="100" />
                 </div>
                 <div class="form-group">
                     <label for="direccionProveedor">Dirección</label>
-                    <input id="direccionProveedor" type="text" th:field="*{direccion}" />
+                    <input id="direccionProveedor" type="text" th:field="*{direccion}" maxlength="200" />
                 </div>
                 <div class="form-group">
                     <label for="estadoProveedor">Estado</label>

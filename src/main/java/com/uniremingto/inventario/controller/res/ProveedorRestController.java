@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para proveedores. */
 @RestController
 @RequestMapping("/api/proveedores")
 public class ProveedorRestController {
@@ -25,11 +26,13 @@ public class ProveedorRestController {
         this.proveedorDAO = proveedorDAO;
     }
 
+    /** Devuelve todos los proveedores. */
     @GetMapping
     public List<ProveedorVO> listarProveedores() {
         return proveedorDAO.findAll();
     }
 
+    /** Busca un proveedor y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<ProveedorVO> obtenerProveedor(@PathVariable Integer id) {
         return proveedorDAO.findById(id)
@@ -37,12 +40,14 @@ public class ProveedorRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea un proveedor y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<ProveedorVO> crearProveedor(@RequestBody ProveedorVO proveedor) {
         ProveedorVO guardado = proveedorDAO.save(proveedor);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    /** Actualiza el proveedor indicado por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<ProveedorVO> actualizarProveedor(@PathVariable Integer id, @RequestBody ProveedorVO proveedor) {
         proveedor.setIdProveedor(id);
@@ -50,6 +55,7 @@ public class ProveedorRestController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /** Elimina el proveedor o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProveedor(@PathVariable Integer id) {
         boolean eliminado = proveedorDAO.deleteById(id);

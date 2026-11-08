@@ -1,5 +1,6 @@
 package com.uniremingto.inventario.model.vo;
 
+/** Transporta los datos de contacto y estado de un proveedor. */
 public class ProveedorVO {
 
     private Integer idProveedor;

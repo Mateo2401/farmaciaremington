@@ -2,6 +2,7 @@ package com.uniremingto.inventario.model.vo;
 
 import java.time.LocalDateTime;
 
+/** Transporta los datos de un movimiento aplicado al inventario. */
 public class MovimientoInventarioVO {
 
     private Integer idMovimiento;

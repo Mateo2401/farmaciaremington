@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para categorías. */
 @RestController
 @RequestMapping("/api/categorias")
 public class CategoriaRestController {
@@ -25,11 +26,13 @@ public class CategoriaRestController {
         this.categoriaDAO = categoriaDAO;
     }
 
+    /** Devuelve todas las categorías. */
     @GetMapping
     public List<CategoriaVO> listarCategorias() {
         return categoriaDAO.findAll();
     }
 
+    /** Busca una categoría y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaVO> obtenerCategoria(@PathVariable Integer id) {
         return categoriaDAO.findById(id)
@@ -37,12 +40,14 @@ public class CategoriaRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea una categoría y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<CategoriaVO> crearCategoria(@RequestBody CategoriaVO categoria) {
         CategoriaVO guardada = categoriaDAO.save(categoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
     }
 
+    /** Actualiza la categoría indicada por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaVO> actualizarCategoria(@PathVariable Integer id, @RequestBody CategoriaVO categoria) {
         categoria.setIdCategoria(id);
@@ -50,6 +55,7 @@ public class CategoriaRestController {
         return ResponseEntity.ok(actualizada);
     }
 
+    /** Elimina la categoría o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarCategoria(@PathVariable Integer id) {
         boolean eliminado = categoriaDAO.deleteById(id);
