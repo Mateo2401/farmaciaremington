@@ -1,12 +1,12 @@
 # Inventario de farmacia
 
-Aplicación web para administrar productos, categorías, proveedores, usuarios, ventas y movimientos de inventario. Está desarrollada con Java 17 y Spring Boot, utiliza Thymeleaf para las vistas, Spring Security para autenticación y autorización, y JDBC para la persistencia del catálogo de productos.
+Aplicación web para administrar productos, categorías, proveedores, usuarios, ventas y movimientos de inventario. Está desarrollada con Java 25 (LTS) y Spring Boot, utiliza Thymeleaf para las vistas, Spring Security para autenticación y autorización, y JDBC para persistir productos, proveedores, ventas y movimientos de inventario.
 
-> Estado documentado al 7 de noviembre de 2026. La documentación refleja el código actual; no implica que todos los módulos ya persistan en MySQL.
+> Estado documentado al 8 de noviembre de 2026. La documentación refleja el código actual; no implica que todos los módulos ya persistan en MySQL.
 
 ## Tecnologías
 
-- Java 17
+- Java 25 (LTS)
 - Spring Boot 4.1.2
 - Spring MVC y Thymeleaf
 - Spring Security
@@ -17,12 +17,12 @@ Aplicación web para administrar productos, categorías, proveedores, usuarios, 
 
 ## Módulos
 
-- Productos: MVC y API REST; el DAO de productos consulta y modifica la tabla `producto` mediante SQL.
-- Categorías, proveedores, usuarios, ventas, detalles y movimientos: controladores y vistas/API disponibles, pero sus implementaciones DAO actuales almacenan datos en memoria. Esos datos no son persistentes y se pierden al reiniciar.
+- Productos, categorías, proveedores, usuarios, ventas y movimientos: sus DAO usan `JdbcTemplate` para consultar y modificar sus tablas MySQL.
+- Detalles de venta: tienen controladores y vistas/API, pero su DAO actual usa un mapa en memoria. Sus cambios se pierden al reiniciar.
 - Autenticación: usuarios de demostración en memoria, no cargados desde la tabla `usuario`.
 - Dashboard: muestra información de bienvenida y estadísticas de ejemplo; los totales todavía no se consultan de MySQL.
 
-Las páginas de listas distintas de productos contienen actualmente filas demostrativas estáticas. Por eso, que una operación responda correctamente en esas páginas no significa que se haya guardado en la base de datos.
+La lista de detalles de venta aún contiene filas demostrativas estáticas. Los movimientos se guardan como historial, pero registrar un movimiento todavía no recalcula `producto.stock`. Los usuarios creados en la aplicación se guardan en MySQL, pero todavía no se usan para autenticar sesiones.
 
 ## Estructura
 
@@ -49,12 +49,12 @@ src/
 
 ## Requisitos
 
-- JDK 17 instalado y `JAVA_HOME` configurado.
-- MySQL 8.0 o compatible disponible para las operaciones de productos.
+- JDK 25 instalado y `JAVA_HOME` configurado.
+- MySQL 8.0 o compatible disponible para productos, categorías, proveedores, usuarios, ventas y movimientos.
 - Base de datos `farmacia_inventario` y las tablas creadas con el esquema del negocio.
-- Credenciales MySQL con permisos de lectura, inserción, actualización y eliminación en la tabla `producto`.
+- Credenciales MySQL con permisos de lectura, inserción, actualización y eliminación en las tablas persistentes.
 
-Este repositorio no incluye actualmente un archivo `schema.sql` ni una migración. Ejecuta el script SQL del proyecto en MySQL antes de usar las operaciones de productos.
+Este repositorio no incluye actualmente un archivo `schema.sql` ni una migración. Ejecuta el script SQL del proyecto en MySQL antes de usar las operaciones persistentes.
 
 ## Configuración de MySQL
 
@@ -106,7 +106,10 @@ Son credenciales locales de demostración, no adecuadas para producción. La con
 |---|---|
 | `/login` | Inicio de sesión |
 | `/dashboard` | Panel principal |
-| `/productos` | Lista de productos desde el DAO |
+| `/productos` | Lista de productos desde el DAO JDBC |
+| `/proveedores` | Lista de proveedores desde el DAO JDBC |
+| `/ventas` | Lista de ventas desde el DAO JDBC |
+| `/movimientos-inventario` | Historial de movimientos desde el DAO JDBC |
 | `/productos/nuevo` | Formulario de alta |
 | `/productos/{id}/editar` | Formulario de edición |
 | `/categorias`, `/proveedores`, `/usuarios`, `/ventas` | Vistas de gestión |
@@ -150,13 +153,14 @@ El proyecto incluye el plugin Maven de Javadoc. Genera la documentación HTML co
 .\mvnw.cmd javadoc:javadoc
 ```
 
-El resultado se escribe en `target/site/apidocs/index.html`. Requiere JDK 17 y genera la documentación de la API Java; no reemplaza las pruebas ni la configuración de la base de datos.
+El resultado se escribe en `target/site/apidocs/index.html`. Requiere JDK 25 y genera la documentación de la API Java; no reemplaza las pruebas ni la configuración de la base de datos.
 
 ## Limitaciones conocidas
 
-- Solo `ProductoDAOImpl` es persistente y usa MySQL. Los demás DAO (`Categoria`, `Proveedor`, `Usuario`, `Venta`, `DetalleVenta` y `MovimientoInventario`) usan mapas en memoria.
+- `DetalleVentaDAOImpl` aún usa un mapa en memoria.
+- Los movimientos se registran en MySQL, pero no actualizan automáticamente el stock del producto.
 - La autenticación y los roles también están definidos en memoria.
 - No se incluyen migraciones ni inicialización automática del esquema.
-- El dashboard y varias listas contienen cifras o registros de muestra.
+- El dashboard y la lista de detalles de venta contienen cifras o registros de muestra.
 - Las pruebas con Mockito/MockMvc no demuestran conectividad ni persistencia real de MySQL.
 - Antes de producción deben implementarse persistencia para todos los módulos, gestión segura de usuarios/roles, validaciones y pruebas de integración con una base de pruebas.

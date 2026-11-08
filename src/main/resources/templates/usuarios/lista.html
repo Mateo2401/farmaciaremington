@@ -39,6 +39,8 @@
         </header>
 
         <div class="page-card">
+            <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
             <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="margin: 0;">Gestión de usuarios y permisos</h2>
                 <a class="btn btn-primary" th:href="@{/usuarios/nuevo}">Nuevo usuario</a>
@@ -56,29 +58,27 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>Administrador</td>
-                        <td>admin@farmacia.com</td>
-                        <td><span class="badge badge-admin">ADMIN</span></td>
-                        <td><span class="badge badge-success">Activo</span></td>
+                    <tr th:each="usuario : ${usuarios}">
+                        <td th:text="${usuario.nombre}">Nombre</td>
+                        <td th:text="${usuario.correo}">correo@farmacia.com</td>
+                        <td>
+                            <span class="badge badge-admin" th:if="${usuario.rol == 'ADMINISTRADOR'}">ADMINISTRADOR</span>
+                            <span class="badge badge-vendedor" th:unless="${usuario.rol == 'ADMINISTRADOR'}" th:text="${usuario.rol}">VENDEDOR</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success" th:if="${usuario.estado}">Activo</span>
+                            <span class="badge badge-warning" th:unless="${usuario.estado}">Inactivo</span>
+                        </td>
                         <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/usuarios/1/editar}">Editar</a>
-                            <form th:action="@{/usuarios/1/eliminar}" method="post" style="display:inline;">
+                            <a class="btn btn-secondary" th:href="@{/usuarios/{id}/editar(id=${usuario.idUsuario})}">Editar</a>
+                            <form th:action="@{/usuarios/{id}/eliminar(id=${usuario.idUsuario})}" method="post" style="display:inline;">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                                 <button class="btn btn-danger" type="submit">Eliminar</button>
                             </form>
                         </td>
                     </tr>
-                    <tr>
-                        <td>Vendedor</td>
-                        <td>vendedor@farmacia.com</td>
-                        <td><span class="badge badge-vendedor">VENDEDOR</span></td>
-                        <td><span class="badge badge-success">Activo</span></td>
-                        <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/usuarios/2/editar}">Editar</a>
-                            <form th:action="@{/usuarios/2/eliminar}" method="post" style="display:inline;">
-                                <button class="btn btn-danger" type="submit">Eliminar</button>
-                            </form>
-                        </td>
+                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                        <td colspan="5" class="muted">No hay usuarios registrados.</td>
                     </tr>
                     </tbody>
                 </table>

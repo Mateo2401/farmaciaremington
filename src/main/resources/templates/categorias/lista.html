@@ -39,6 +39,8 @@
         </header>
 
         <div class="page-card">
+            <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
             <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="margin: 0;">Clasificación del inventario</h2>
                 <a class="btn btn-primary" th:href="@{/categorias/nuevo}">Nueva categoría</a>
@@ -54,25 +56,19 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>Analgésicos</td>
-                        <td>Medicamentos para aliviar el dolor</td>
+                    <tr th:each="categoria : ${categorias}">
+                        <td th:text="${categoria.nombre}">Nombre</td>
+                        <td th:text="${categoria.descripcion ?: '-'}">-</td>
                         <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/categorias/1/editar}">Editar</a>
-                            <form th:action="@{/categorias/1/eliminar}" method="post" style="display:inline;">
+                            <a class="btn btn-secondary" th:href="@{/categorias/{id}/editar(id=${categoria.idCategoria})}">Editar</a>
+                            <form th:action="@{/categorias/{id}/eliminar(id=${categoria.idCategoria})}" method="post" style="display:inline;">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                                 <button class="btn btn-danger" type="submit">Eliminar</button>
                             </form>
                         </td>
                     </tr>
-                    <tr>
-                        <td>Antibióticos</td>
-                        <td>Medicamentos para infecciones bacterianas</td>
-                        <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/categorias/2/editar}">Editar</a>
-                            <form th:action="@{/categorias/2/eliminar}" method="post" style="display:inline;">
-                                <button class="btn btn-danger" type="submit">Eliminar</button>
-                            </form>
-                        </td>
+                    <tr th:if="${#lists.isEmpty(categorias)}">
+                        <td colspan="3" class="muted">No hay categorías registradas.</td>
                     </tr>
                     </tbody>
                 </table>

@@ -9,8 +9,13 @@ import com.uniremingto.inventario.model.dao.ProductoDAO;
 import com.uniremingto.inventario.model.dao.ProveedorDAO;
 import com.uniremingto.inventario.model.dao.UsuarioDAO;
 import com.uniremingto.inventario.model.dao.VentaDAO;
+import com.uniremingto.inventario.model.vo.CategoriaVO;
+import com.uniremingto.inventario.model.vo.MovimientoInventarioVO;
 import com.uniremingto.inventario.model.vo.ProductoVO;
 import com.uniremingto.inventario.model.vo.ProveedorVO;
+import com.uniremingto.inventario.model.vo.UsuarioVO;
+import com.uniremingto.inventario.model.vo.VentaVO;
+import com.uniremingto.inventario.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +27,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.AbstractView;
@@ -30,7 +36,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +61,7 @@ class MvcControllersMockMvcTest {
     @Mock private CategoriaDAO categoriaDAO;
     @Mock private ProveedorDAO proveedorDAO;
     @Mock private UsuarioDAO usuarioDAO;
+        @Mock private PasswordEncoder passwordEncoder;
     @Mock private ProductoDAO productoDAO;
     @Mock private VentaDAO ventaDAO;
     @Mock private DetalleVentaDAO detalleVentaDAO;
@@ -68,7 +74,7 @@ class MvcControllersMockMvcTest {
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new CategoriaMvcController(categoriaDAO),
                 new ProveedorMvcController(proveedorDAO),
-                new UsuarioMvcController(usuarioDAO),
+                new UsuarioMvcController(new UsuarioService(usuarioDAO, passwordEncoder)),
                 new ProductoMvcController(productoDAO),
                 new VentaMvcController(ventaDAO),
                 new DetalleVentaMvcController(detalleVentaDAO),
@@ -106,15 +112,31 @@ class MvcControllersMockMvcTest {
         mockMvc.perform(get("/categorias/3/editar"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("categoria"));
-        mockMvc.perform(post("/categorias").param("nombre", "Vitaminas"))
+        mockMvc.perform(post("/categorias")
+                        .param("nombre", "Vitaminas")
+                        .param("descripcion", "Suplementos"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/categorias"));
+                .andExpect(redirectedUrl("/categorias"))
+                .andExpect(flash().attribute("mensaje", "La categoría fue guardada."));
         mockMvc.perform(post("/categorias/3/eliminar"))
                 .andExpect(status().is3xxRedirection());
 
-        verify(categoriaDAO).save(any());
+                ArgumentCaptor<CategoriaVO> categoriaCaptor = ArgumentCaptor.forClass(CategoriaVO.class);
+                verify(categoriaDAO).save(categoriaCaptor.capture());
+                assertEquals("Vitaminas", categoriaCaptor.getValue().getNombre());
+                assertEquals("Suplementos", categoriaCaptor.getValue().getDescripcion());
         verify(categoriaDAO).deleteById(3);
     }
+
+        @Test
+        void categoriaDuplicadaVuelveAlFormularioConError() throws Exception {
+                when(categoriaDAO.save(any(CategoriaVO.class))).thenThrow(new DuplicateKeyException("duplicate"));
+
+                mockMvc.perform(post("/categorias").param("nombre", "Vitaminas"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("categorias/formulario"))
+                                .andExpect(model().attribute("formError", "Ya existe una categoría con ese nombre."));
+        }
 
     @Test
     void proveedoresRenderizanVistasYDeleganCrud() throws Exception {
@@ -172,14 +194,35 @@ class MvcControllersMockMvcTest {
                 .andExpect(model().attributeExists("usuario"));
         mockMvc.perform(get("/usuarios/5/editar"))
                 .andExpect(model().attributeExists("usuario"));
-        mockMvc.perform(post("/usuarios").param("nombre", "Usuario test"))
-                .andExpect(redirectedUrl("/usuarios"));
+        when(passwordEncoder.encode("ClaveSegura123")).thenReturn("$2a$hash-usuario");
+        mockMvc.perform(post("/usuarios")
+                        .param("nombre", "Usuario test")
+                        .param("correo", "usuario@test.com")
+                        .param("contrasena", "ClaveSegura123")
+                        .param("rol", "VENDEDOR")
+                        .param("estado", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/usuarios"))
+                .andExpect(flash().attribute("mensaje", "El usuario fue registrado."));
         mockMvc.perform(post("/usuarios/5/eliminar"))
                 .andExpect(redirectedUrl("/usuarios"));
 
-        verify(usuarioDAO).save(any());
+        ArgumentCaptor<UsuarioVO> usuarioCaptor = ArgumentCaptor.forClass(UsuarioVO.class);
+        verify(usuarioDAO).save(usuarioCaptor.capture());
+        assertEquals("usuario@test.com", usuarioCaptor.getValue().getCorreo());
+        assertEquals("$2a$hash-usuario", usuarioCaptor.getValue().getContrasena());
+        verify(passwordEncoder).encode("ClaveSegura123");
         verify(usuarioDAO).deleteById(5);
     }
+
+        @Test
+        void usuarioInvalidoRegresaAlFormularioSinPersistirse() throws Exception {
+                mockMvc.perform(post("/usuarios").param("nombre", ""))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("usuarios/formulario"));
+
+                verifyNoInteractions(usuarioDAO, passwordEncoder);
+        }
 
     @Test
     void ventasRenderizanVistasYDeleganCrud() throws Exception {
@@ -195,14 +238,35 @@ class MvcControllersMockMvcTest {
                 .andExpect(model().attributeExists("venta"));
         mockMvc.perform(get("/ventas/6/editar"))
                 .andExpect(model().attributeExists("venta"));
-        mockMvc.perform(post("/ventas").param("metodoPago", "EFECTIVO"))
-                .andExpect(redirectedUrl("/ventas"));
+        mockMvc.perform(post("/ventas")
+                        .param("idUsuario", "1")
+                        .param("total", "14.30")
+                        .param("metodoPago", "EFECTIVO")
+                        .param("estado", "COMPLETADA"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ventas"))
+                .andExpect(flash().attribute("mensaje", "La venta fue registrada."));
         mockMvc.perform(post("/ventas/6/eliminar"))
                 .andExpect(redirectedUrl("/ventas"));
 
-        verify(ventaDAO).save(any());
+        ArgumentCaptor<VentaVO> ventaCaptor = ArgumentCaptor.forClass(VentaVO.class);
+        verify(ventaDAO).save(ventaCaptor.capture());
+        assertEquals(1, ventaCaptor.getValue().getIdUsuario());
+        assertEquals(new BigDecimal("14.30"), ventaCaptor.getValue().getTotal());
         verify(ventaDAO).deleteById(6);
     }
+
+        @Test
+        void ventaRechazaCamposRequeridosInvalidosSinLlamarAlDao() throws Exception {
+                mockMvc.perform(post("/ventas")
+                                                .param("idUsuario", "0")
+                                                .param("total", "-1")
+                                                .param("metodoPago", ""))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("ventas/formulario"));
+
+                verifyNoInteractions(ventaDAO);
+        }
 
     @Test
     void detallesVentaRenderizanVistasYDeleganCrud() throws Exception {
@@ -241,13 +305,37 @@ class MvcControllersMockMvcTest {
                 .andExpect(model().attributeExists("movimientoInventario"));
         mockMvc.perform(get("/movimientos-inventario/8/editar"))
                 .andExpect(model().attributeExists("movimientoInventario"));
-        mockMvc.perform(post("/movimientos-inventario").param("tipo", "ENTRADA"))
-                .andExpect(redirectedUrl("/movimientos-inventario"));
+        mockMvc.perform(post("/movimientos-inventario")
+                        .param("idProducto", "2")
+                        .param("idUsuario", "1")
+                        .param("tipo", "ENTRADA")
+                        .param("cantidad", "30")
+                        .param("descripcion", "Reposición de prueba"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/movimientos-inventario"))
+                .andExpect(flash().attribute("mensaje", "El movimiento fue registrado."));
         mockMvc.perform(post("/movimientos-inventario/8/eliminar"))
                 .andExpect(redirectedUrl("/movimientos-inventario"));
 
-        verify(movimientoDAO).save(any());
+        ArgumentCaptor<MovimientoInventarioVO> movimientoCaptor = ArgumentCaptor.forClass(MovimientoInventarioVO.class);
+        verify(movimientoDAO).save(movimientoCaptor.capture());
+        assertEquals(2, movimientoCaptor.getValue().getIdProducto());
+        assertEquals(1, movimientoCaptor.getValue().getIdUsuario());
+        assertEquals(30, movimientoCaptor.getValue().getCantidad());
         verify(movimientoDAO).deleteById(8);
+    }
+
+    @Test
+    void movimientoRechazaCantidadOCamposInvalidosSinLlamarAlDao() throws Exception {
+        mockMvc.perform(post("/movimientos-inventario")
+                        .param("idProducto", "0")
+                        .param("idUsuario", "-1")
+                        .param("tipo", "TIPO_INVALIDO")
+                        .param("cantidad", "0"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("movimientos-inventario/formulario"));
+
+        verifyNoInteractions(movimientoDAO);
     }
 
     @Test

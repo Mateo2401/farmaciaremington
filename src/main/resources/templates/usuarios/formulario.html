@@ -38,25 +38,34 @@
         </header>
 
         <div class="page-card">
-            <form th:action="@{/usuarios}" th:object="${usuario}" method="post" class="form-grid">
+            <div th:if="${formError}" class="alert alert-error" th:text="${formError}"></div>
+            <form th:action="${usuario.idUsuario == null} ? @{/usuarios} : @{/usuarios/{id}(id=${usuario.idUsuario})}"
+                  th:object="${usuario}" method="post" class="form-grid">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                 <div class="form-group">
                     <label for="nombre">Nombre</label>
-                    <input id="nombre" type="text" th:field="*{nombre}" placeholder="Nombre completo" />
+                    <input id="nombre" type="text" th:field="*{nombre}" maxlength="100" placeholder="Nombre completo" required />
+                    <small class="muted" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
                 </div>
                 <div class="form-group">
                     <label for="correo">Correo</label>
-                    <input id="correo" type="email" th:field="*{correo}" placeholder="correo@farmacia.com" />
+                    <input id="correo" type="email" th:field="*{correo}" maxlength="100" placeholder="correo@farmacia.com" required />
+                    <small class="muted" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></small>
                 </div>
                 <div class="form-group">
-                    <label for="contrasena">Contraseña</label>
-                    <input id="contrasena" type="password" th:field="*{contrasena}" placeholder="********" />
+                    <label for="contrasena" th:text="${usuario.idUsuario == null ? 'Contraseña' : 'Nueva contraseña (opcional)'}">Contraseña</label>
+                    <input id="contrasena" type="password" th:field="*{contrasena}"
+                           th:required="${usuario.idUsuario == null}" minlength="8" maxlength="72"
+                           placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+                    <small class="muted" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></small>
                 </div>
                 <div class="form-group">
                     <label for="rol">Rol</label>
-                    <select id="rol" th:field="*{rol}">
+                    <select id="rol" th:field="*{rol}" required>
                         <option value="ADMINISTRADOR">Administrador</option>
                         <option value="VENDEDOR">Vendedor</option>
                     </select>
+                    <small class="muted" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}"></small>
                 </div>
                 <div class="form-group">
                     <label for="estadoUsuario">Estado</label>

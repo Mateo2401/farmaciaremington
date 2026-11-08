@@ -14,6 +14,7 @@ import com.uniremingto.inventario.model.vo.ProductoVO;
 import com.uniremingto.inventario.model.vo.ProveedorVO;
 import com.uniremingto.inventario.model.vo.UsuarioVO;
 import com.uniremingto.inventario.model.vo.VentaVO;
+import com.uniremingto.inventario.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -44,6 +46,7 @@ class RestControllersMockMvcTest {
     @Mock private CategoriaDAO categoriaDAO;
     @Mock private ProveedorDAO proveedorDAO;
     @Mock private UsuarioDAO usuarioDAO;
+        @Mock private PasswordEncoder passwordEncoder;
     @Mock private ProductoDAO productoDAO;
     @Mock private VentaDAO ventaDAO;
     @Mock private DetalleVentaDAO detalleVentaDAO;
@@ -56,7 +59,7 @@ class RestControllersMockMvcTest {
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new CategoriaRestController(categoriaDAO),
                 new ProveedorRestController(proveedorDAO),
-                new UsuarioRestController(usuarioDAO),
+                new UsuarioRestController(new UsuarioService(usuarioDAO, passwordEncoder)),
                 new ProductoRestController(productoDAO),
                 new VentaRestController(ventaDAO),
                 new DetalleVentaRestController(detalleVentaDAO),
@@ -128,30 +131,43 @@ class RestControllersMockMvcTest {
         usuario.setIdUsuario(6);
         usuario.setNombre("Vendedor");
         usuario.setCorreo("vendedor@test.com");
+        usuario.setContrasena("$2a$existing-hash");
         usuario.setRol("VENDEDOR");
         when(usuarioDAO.findAll()).thenReturn(List.of(usuario));
         when(usuarioDAO.findById(6)).thenReturn(Optional.of(usuario));
         when(usuarioDAO.findById(99)).thenReturn(Optional.empty());
+        when(usuarioDAO.findById(7)).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.encode("ClaveNueva123")).thenReturn("$2a$encoded-password");
         when(usuarioDAO.save(any(UsuarioVO.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(usuarioDAO.update(any(UsuarioVO.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(usuarioDAO.deleteById(6)).thenReturn(true);
         when(usuarioDAO.deleteById(99)).thenReturn(false);
 
         mockMvc.perform(get("/api/usuarios"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$[0].correo").value("vendedor@test.com"));
-        mockMvc.perform(get("/api/usuarios/6")).andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].correo").value("vendedor@test.com"))
+                .andExpect(jsonPath("$[0].contrasena").doesNotExist());
+        mockMvc.perform(get("/api/usuarios/6"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contrasena").doesNotExist());
         mockMvc.perform(get("/api/usuarios/99")).andExpect(status().isNotFound());
         mockMvc.perform(post("/api/usuarios").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"Nuevo\",\"correo\":\"nuevo@test.com\"}"))
-                .andExpect(status().isCreated());
+                        .content("{\"nombre\":\"Nuevo\",\"correo\":\"nuevo@test.com\","
+                                + "\"contrasena\":\"ClaveNueva123\",\"rol\":\"VENDEDOR\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.contrasena").doesNotExist());
         mockMvc.perform(put("/api/usuarios/7").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"Editado\"}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.idUsuario").value(7));
+                        .content("{\"nombre\":\"Editado\",\"correo\":\"editado@test.com\","
+                                + "\"rol\":\"VENDEDOR\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idUsuario").value(7))
+                .andExpect(jsonPath("$.contrasena").doesNotExist());
         mockMvc.perform(delete("/api/usuarios/6")).andExpect(status().isNoContent());
         mockMvc.perform(delete("/api/usuarios/99")).andExpect(status().isNotFound());
 
         verify(usuarioDAO).save(any(UsuarioVO.class));
         verify(usuarioDAO).update(any(UsuarioVO.class));
+        verify(passwordEncoder).encode("ClaveNueva123");
     }
 
     @Test

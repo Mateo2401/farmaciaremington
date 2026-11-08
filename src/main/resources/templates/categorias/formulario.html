@@ -36,14 +36,19 @@
         </header>
 
         <div class="page-card">
-            <form th:action="@{/categorias}" th:object="${categoria}" method="post" class="form-grid">
+            <div th:if="${formError}" class="alert alert-error" th:text="${formError}"></div>
+            <form th:action="${categoria.idCategoria == null} ? @{/categorias} : @{/categorias/{id}(id=${categoria.idCategoria})}"
+                  th:object="${categoria}" method="post" class="form-grid">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                 <div class="form-group">
                     <label for="nombreCategoria">Nombre</label>
-                    <input id="nombreCategoria" type="text" th:field="*{nombre}" />
+                    <input id="nombreCategoria" type="text" th:field="*{nombre}" maxlength="100" required />
+                    <small class="muted" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
                 </div>
                 <div class="form-group">
                     <label for="descripcionCategoria">Descripción</label>
-                    <textarea id="descripcionCategoria" rows="4" th:field="*{descripcion}"></textarea>
+                    <textarea id="descripcionCategoria" rows="4" maxlength="255" th:field="*{descripcion}"></textarea>
+                    <small class="muted" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></small>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar</button>

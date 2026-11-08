@@ -39,6 +39,8 @@
         </header>
 
         <div class="page-card">
+            <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
             <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="margin: 0;">Registro de ventas</h2>
                 <a class="btn btn-primary" th:href="@{/ventas/nuevo}">Nueva venta</a>
@@ -54,24 +56,30 @@
                         <th>Total</th>
                         <th>Pago</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>VEN-001</td>
-                        <td>Vendedor</td>
-                        <td>2026-10-31</td>
-                        <td>$14.300</td>
-                        <td>Efectivo</td>
-                        <td><span class="badge badge-success">Completada</span></td>
+                    <tr th:each="venta : ${ventas}">
+                        <td th:text="${'VEN-' + venta.idVenta}">VEN-1</td>
+                        <td th:text="${venta.idUsuario}">1</td>
+                        <td th:text="${venta.fechaVenta != null ? #temporals.format(venta.fechaVenta, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                        <td th:text="${'$' + #numbers.formatDecimal(venta.total, 1, 'POINT', 2, 'COMMA')}">$0.00</td>
+                        <td th:text="${venta.metodoPago}">EFECTIVO</td>
+                        <td>
+                            <span class="badge badge-success" th:if="${venta.estado == 'COMPLETADA'}">Completada</span>
+                            <span class="badge badge-warning" th:unless="${venta.estado == 'COMPLETADA'}" th:text="${venta.estado}">Anulada</span>
+                        </td>
+                        <td class="actions">
+                            <a class="btn btn-secondary" th:href="@{/ventas/{id}/editar(id=${venta.idVenta})}">Editar</a>
+                            <form th:action="@{/ventas/{id}/eliminar(id=${venta.idVenta})}" method="post" style="display:inline;">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                <button class="btn btn-danger" type="submit">Eliminar</button>
+                            </form>
+                        </td>
                     </tr>
-                    <tr>
-                        <td>VEN-002</td>
-                        <td>Administrador</td>
-                        <td>2026-10-30</td>
-                        <td>$9.500</td>
-                        <td>Tarjeta</td>
-                        <td><span class="badge badge-success">Completada</span></td>
+                    <tr th:if="${#lists.isEmpty(ventas)}">
+                        <td colspan="7" class="muted">No hay ventas registradas.</td>
                     </tr>
                     </tbody>
                 </table>
