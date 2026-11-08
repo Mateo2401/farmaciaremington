@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Archivos compilados y temporales
+/.build-jdk25/
+/Users/
