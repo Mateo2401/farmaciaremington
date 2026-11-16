@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/** Implementación temporal de {@link DetalleVentaDAO} basada en memoria. */
 @Repository
 public class DetalleVentaDAOImpl implements DetalleVentaDAO {
 

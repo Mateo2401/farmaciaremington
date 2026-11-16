@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+/** Atiende el ciclo de vida de productos a través de vistas Thymeleaf. */
 @Controller
 @RequestMapping("/productos")
 public class ProductoMvcController {
@@ -24,12 +25,14 @@ public class ProductoMvcController {
         this.productoDAO = productoDAO;
     }
 
+    /** Carga desde el DAO los productos que se muestran en la lista. */
     @GetMapping
     public String listarProductos(Model model) {
         model.addAttribute("productos", productoDAO.findAll());
         return "productos/lista";
     }
 
+    /** Prepara valores iniciales para el formulario de alta de producto. */
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevo(Model model) {
         ProductoVO producto = new ProductoVO();
@@ -40,12 +43,31 @@ public class ProductoMvcController {
         return "productos/formulario";
     }
 
+    /**
+        * Valida y persiste un producto nuevo.
+        *
+     * @param producto datos recibidos del formulario
+     * @param bindingResult errores de conversión de campos enviados
+     * @param model modelo de la vista para errores de persistencia
+     * @param redirectAttributes mensajes que se muestran después de redirigir
+     * @return vista del formulario si hay error o redirección al listado
+     */
     @PostMapping
     public String guardarProducto(@ModelAttribute ProductoVO producto, BindingResult bindingResult, Model model,
                                   RedirectAttributes redirectAttributes) {
         return persistirProducto(producto, bindingResult, model, redirectAttributes, false);
     }
 
+    /**
+        * Asigna el ID de la ruta y actualiza el producto existente.
+        *
+     * @param id identificador del producto que se actualiza
+     * @param producto datos enviados por el formulario
+     * @param bindingResult errores de conversión de campos enviados
+     * @param model modelo de la vista para errores de persistencia
+     * @param redirectAttributes mensajes que se muestran después de redirigir
+     * @return vista del formulario si hay error o redirección al listado
+     */
     @PostMapping("/{id}")
     public String actualizarProducto(@PathVariable Integer id, @ModelAttribute ProductoVO producto,
                                      BindingResult bindingResult, Model model,
@@ -94,12 +116,20 @@ public class ProductoMvcController {
         return "redirect:/productos";
     }
 
+    /** Carga un producto existente para editarlo. */
     @GetMapping("/{id}/editar")
     public String mostrarFormularioEdicion(@PathVariable Integer id, Model model) {
         productoDAO.findById(id).ifPresent(producto -> model.addAttribute("producto", producto));
         return "productos/formulario";
     }
 
+    /**
+        * Elimina un producto si no está referenciado por el historial.
+        *
+     * @param id identificador del producto que se elimina
+     * @param redirectAttributes resultado de la operación para la lista
+     * @return redirección a la lista de productos
+     */
     @PostMapping("/{id}/eliminar")
     public String eliminarProducto(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         try {

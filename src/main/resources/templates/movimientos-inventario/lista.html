@@ -39,6 +39,8 @@
         </header>
 
         <div class="page-card">
+            <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
             <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="margin: 0;">Historial</h2>
                 <a class="btn btn-primary" th:href="@{/movimientos-inventario/nuevo}">Nuevo movimiento</a>
@@ -48,27 +50,38 @@
                 <table>
                     <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Tipo</th>
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Usuario</th>
                         <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td><span class="badge badge-success">ENTRADA</span></td>
-                        <td>Acetaminofén 500mg</td>
-                        <td>30</td>
-                        <td>Administrador</td>
-                        <td>2026-10-31</td>
+                    <tr th:each="movimiento : ${movimientosInventario}">
+                        <td th:text="${movimiento.idMovimiento}">1</td>
+                        <td>
+                            <span class="badge badge-success" th:if="${movimiento.tipo == 'ENTRADA'}" th:text="${movimiento.tipo}">ENTRADA</span>
+                            <span class="badge badge-warning" th:unless="${movimiento.tipo == 'ENTRADA'}" th:text="${movimiento.tipo}">SALIDA</span>
+                        </td>
+                        <td th:text="${movimiento.idProducto}">1</td>
+                        <td th:text="${movimiento.cantidad}">1</td>
+                        <td th:text="${movimiento.idUsuario}">1</td>
+                        <td th:text="${movimiento.fecha != null ? #temporals.format(movimiento.fecha, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                        <td th:text="${movimiento.descripcion ?: '-'}">-</td>
+                        <td class="actions">
+                            <a class="btn btn-secondary" th:href="@{/movimientos-inventario/{id}/editar(id=${movimiento.idMovimiento})}">Editar</a>
+                            <form th:action="@{/movimientos-inventario/{id}/eliminar(id=${movimiento.idMovimiento})}" method="post" style="display:inline;">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                <button class="btn btn-danger" type="submit">Eliminar</button>
+                            </form>
+                        </td>
                     </tr>
-                    <tr>
-                        <td><span class="badge badge-warning">SALIDA</span></td>
-                        <td>Vitamina C 500mg</td>
-                        <td>12</td>
-                        <td>Vendedor</td>
-                        <td>2026-10-30</td>
+                    <tr th:if="${#lists.isEmpty(movimientosInventario)}">
+                        <td colspan="8" class="muted">No hay movimientos registrados.</td>
                     </tr>
                     </tbody>
                 </table>

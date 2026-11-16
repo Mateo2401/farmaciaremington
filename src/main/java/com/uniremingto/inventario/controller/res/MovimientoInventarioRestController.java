@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para movimientos de inventario. */
 @RestController
 @RequestMapping("/api/movimientos-inventario")
 public class MovimientoInventarioRestController {
@@ -25,11 +26,13 @@ public class MovimientoInventarioRestController {
         this.movimientoInventarioDAO = movimientoInventarioDAO;
     }
 
+    /** Devuelve todos los movimientos de inventario. */
     @GetMapping
     public List<MovimientoInventarioVO> listarMovimientos() {
         return movimientoInventarioDAO.findAll();
     }
 
+    /** Busca un movimiento y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<MovimientoInventarioVO> obtenerMovimiento(@PathVariable Integer id) {
         return movimientoInventarioDAO.findById(id)
@@ -37,12 +40,14 @@ public class MovimientoInventarioRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea un movimiento y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<MovimientoInventarioVO> crearMovimiento(@RequestBody MovimientoInventarioVO movimientoInventario) {
         MovimientoInventarioVO guardado = movimientoInventarioDAO.save(movimientoInventario);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    /** Actualiza el movimiento indicado por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<MovimientoInventarioVO> actualizarMovimiento(@PathVariable Integer id, @RequestBody MovimientoInventarioVO movimientoInventario) {
         movimientoInventario.setIdMovimiento(id);
@@ -50,6 +55,7 @@ public class MovimientoInventarioRestController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /** Elimina el movimiento o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarMovimiento(@PathVariable Integer id) {
         boolean eliminado = movimientoInventarioDAO.deleteById(id);

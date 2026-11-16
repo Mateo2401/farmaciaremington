@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para los detalles de venta. */
 @RestController
 @RequestMapping("/api/detalle-ventas")
 public class DetalleVentaRestController {
@@ -25,11 +26,13 @@ public class DetalleVentaRestController {
         this.detalleVentaDAO = detalleVentaDAO;
     }
 
+    /** Devuelve todos los detalles de venta. */
     @GetMapping
     public List<DetalleVentaVO> listarDetalles() {
         return detalleVentaDAO.findAll();
     }
 
+    /** Busca un detalle y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<DetalleVentaVO> obtenerDetalle(@PathVariable Integer id) {
         return detalleVentaDAO.findById(id)
@@ -37,12 +40,14 @@ public class DetalleVentaRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea un detalle y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<DetalleVentaVO> crearDetalle(@RequestBody DetalleVentaVO detalleVenta) {
         DetalleVentaVO guardado = detalleVentaDAO.save(detalleVenta);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
+    /** Actualiza el detalle indicado por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<DetalleVentaVO> actualizarDetalle(@PathVariable Integer id, @RequestBody DetalleVentaVO detalleVenta) {
         detalleVenta.setIdDetalle(id);
@@ -50,6 +55,7 @@ public class DetalleVentaRestController {
         return ResponseEntity.ok(actualizado);
     }
 
+    /** Elimina el detalle o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarDetalle(@PathVariable Integer id) {
         boolean eliminado = detalleVentaDAO.deleteById(id);

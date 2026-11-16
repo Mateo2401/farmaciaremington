@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <title>Dashboard | Farmacia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
@@ -21,6 +23,7 @@
             <a class="nav-link" th:href="@{/movimientos-inventario}">📦 Inventario</a>
             <a class="nav-link" th:href="@{/categorias}">📁 Categorías</a>
             <a class="nav-link" th:href="@{/proveedores}">🚚 Proveedores</a>
+            <button class="nav-link" id="aiChatNavButton" type="button">✨ Farmacia AI</button>
             <a class="nav-link" sec:authorize="hasRole('ADMIN')" th:href="@{/usuarios}">👤 Usuarios</a>
         </nav>
 
@@ -67,6 +70,54 @@
                 <a class="btn btn-secondary" th:href="@{/ventas}">Registrar venta</a>
                 <a class="btn btn-secondary" sec:authorize="hasRole('ADMIN')" th:href="@{/usuarios}">Administrar usuarios</a>
             </div>
+        </div>
+
+        <div class="ai-chat-widget">
+            <button class="ai-chat-launcher" id="aiChatLauncher" type="button"
+                    aria-controls="farmacia-ai" aria-expanded="false">
+                <span class="ai-chat-launcher-icon" aria-hidden="true">✦</span>
+                <span>Farmacia AI</span>
+                <span class="ai-chat-launcher-dot" aria-hidden="true"></span>
+            </button>
+
+            <section class="ai-chat page-card" id="farmacia-ai" aria-labelledby="ai-chat-title"
+                     role="dialog" aria-modal="false" hidden>
+                <header class="ai-chat-heading">
+                    <div class="ai-chat-brand">
+                        <span class="ai-chat-avatar" aria-hidden="true">✦</span>
+                        <div>
+                            <span class="ai-chat-eyebrow">ASISTENTE VIRTUAL</span>
+                            <h2 id="ai-chat-title">Farmacia AI</h2>
+                            <span class="ai-status"><span aria-hidden="true"></span> En línea</span>
+                        </div>
+                    </div>
+                    <button class="ai-chat-close" id="aiChatClose" type="button" aria-label="Cerrar chat">
+                        &times;
+                    </button>
+                </header>
+
+                <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
+                    <div class="ai-message ai-message-assistant">
+                        <span class="ai-message-label">Farmacia AI</span>
+                        <p>¡Hola! Soy tu asistente de farmacia. ¿En qué puedo ayudarte?</p>
+                    </div>
+                </div>
+
+                <form class="ai-chat-form" id="aiChatForm">
+                    <label class="visually-hidden" for="aiQuestion">Tu pregunta</label>
+                    <div class="ai-chat-input-row">
+                        <textarea id="aiQuestion" name="pregunta" maxlength="1000" rows="2"
+                                  placeholder="Escribe tu pregunta..." required></textarea>
+                        <button class="ai-chat-send" id="aiSendButton" type="submit" aria-label="Enviar pregunta">
+                            <span aria-hidden="true">➤</span>
+                        </button>
+                    </div>
+                    <div class="ai-chat-form-footer">
+                        <span id="aiChatStatus" role="status" aria-live="polite">Máximo 1000 caracteres.</span>
+                        <span id="aiQuestionCount">0 / 1000</span>
+                    </div>
+                </form>
+            </section>
         </div>
     </main>
 </div>

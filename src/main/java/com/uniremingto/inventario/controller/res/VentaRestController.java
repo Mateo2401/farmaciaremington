@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Expone operaciones REST para ventas. */
 @RestController
 @RequestMapping("/api/ventas")
 public class VentaRestController {
@@ -25,11 +26,13 @@ public class VentaRestController {
         this.ventaDAO = ventaDAO;
     }
 
+    /** Devuelve todas las ventas. */
     @GetMapping
     public List<VentaVO> listarVentas() {
         return ventaDAO.findAll();
     }
 
+    /** Busca una venta y responde 404 cuando no existe. */
     @GetMapping("/{id}")
     public ResponseEntity<VentaVO> obtenerVenta(@PathVariable Integer id) {
         return ventaDAO.findById(id)
@@ -37,12 +40,14 @@ public class VentaRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Crea una venta y responde 201 con el registro creado. */
     @PostMapping
     public ResponseEntity<VentaVO> crearVenta(@RequestBody VentaVO venta) {
         VentaVO guardada = ventaDAO.save(venta);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
     }
 
+    /** Actualiza la venta indicada por la ruta. */
     @PutMapping("/{id}")
     public ResponseEntity<VentaVO> actualizarVenta(@PathVariable Integer id, @RequestBody VentaVO venta) {
         venta.setIdVenta(id);
@@ -50,6 +55,7 @@ public class VentaRestController {
         return ResponseEntity.ok(actualizada);
     }
 
+    /** Elimina la venta o responde 404 si no existía. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarVenta(@PathVariable Integer id) {
         boolean eliminado = ventaDAO.deleteById(id);
