@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/** Implementa el acceso persistente a productos con consultas parametrizadas JDBC. */
 @Repository
 public class ProductoDAOImpl implements ProductoDAO {
 

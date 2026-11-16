@@ -3,6 +3,7 @@ package com.uniremingto.inventario.model.vo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/** Transporta datos de catálogo, precios, existencias y vencimiento de un producto. */
 public class ProductoVO {
 
     private Integer idProducto;

@@ -2,6 +2,7 @@ package com.uniremingto.inventario.model.vo;
 
 import java.time.LocalDateTime;
 
+/** Transporta datos de identidad, acceso, rol y estado de un usuario. */
 public class UsuarioVO {
 
     private Integer idUsuario;

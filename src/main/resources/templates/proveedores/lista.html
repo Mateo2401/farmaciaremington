@@ -39,6 +39,8 @@
         </header>
 
         <div class="page-card">
+            <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
             <div class="actions" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="margin: 0;">Contactos y logística</h2>
                 <a class="btn btn-primary" th:href="@{/proveedores/nuevo}">Nuevo proveedor</a>
@@ -57,31 +59,25 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>Distribuidora Farmacéutica</td>
-                        <td>3001234567</td>
-                        <td>proveedor@gmail.com</td>
-                        <td>Calle principal</td>
-                        <td><span class="badge badge-success">Activo</span></td>
+                    <tr th:each="proveedor : ${proveedores}">
+                        <td th:text="${proveedor.nombre}">Nombre del proveedor</td>
+                        <td th:text="${proveedor.telefono ?: '-'}">-</td>
+                        <td th:text="${proveedor.correo ?: '-'}">-</td>
+                        <td th:text="${proveedor.direccion ?: '-'}">-</td>
+                        <td>
+                            <span class="badge badge-success" th:if="${proveedor.estado}">Activo</span>
+                            <span class="badge badge-warning" th:unless="${proveedor.estado}">Inactivo</span>
+                        </td>
                         <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/proveedores/1/editar}">Editar</a>
-                            <form th:action="@{/proveedores/1/eliminar}" method="post" style="display:inline;">
+                            <a class="btn btn-secondary" th:href="@{/proveedores/{id}/editar(id=${proveedor.idProveedor})}">Editar</a>
+                            <form th:action="@{/proveedores/{id}/eliminar(id=${proveedor.idProveedor})}" method="post" style="display:inline;">
+                                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                                 <button class="btn btn-danger" type="submit">Eliminar</button>
                             </form>
                         </td>
                     </tr>
-                    <tr>
-                        <td>Droguería Central</td>
-                        <td>3019876543</td>
-                        <td>central@gmail.com</td>
-                        <td>Carrera 10</td>
-                        <td><span class="badge badge-success">Activo</span></td>
-                        <td class="actions">
-                            <a class="btn btn-secondary" th:href="@{/proveedores/2/editar}">Editar</a>
-                            <form th:action="@{/proveedores/2/eliminar}" method="post" style="display:inline;">
-                                <button class="btn btn-danger" type="submit">Eliminar</button>
-                            </form>
-                        </td>
+                    <tr th:if="${#lists.isEmpty(proveedores)}">
+                        <td colspan="6" class="muted">No hay proveedores registrados.</td>
                     </tr>
                     </tbody>
                 </table>

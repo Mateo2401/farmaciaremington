@@ -35,30 +35,38 @@
         </header>
 
         <div class="page-card">
-            <form th:action="@{/movimientos-inventario}" th:object="${movimientoInventario}" method="post" class="form-grid">
+            <div th:if="${formError}" class="alert alert-error" th:text="${formError}"></div>
+            <form th:action="${movimientoInventario.idMovimiento == null} ? @{/movimientos-inventario} : @{/movimientos-inventario/{id}(id=${movimientoInventario.idMovimiento})}"
+                  th:object="${movimientoInventario}" method="post" class="form-grid">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                 <div class="form-group">
                     <label for="idProducto">Producto</label>
-                    <input id="idProducto" type="number" th:field="*{idProducto}" />
+                    <input id="idProducto" type="number" min="1" th:field="*{idProducto}" required />
+                    <small class="muted" th:if="${#fields.hasErrors('idProducto')}" th:errors="*{idProducto}"></small>
                 </div>
                 <div class="form-group">
                     <label for="idUsuario">Usuario</label>
-                    <input id="idUsuario" type="number" th:field="*{idUsuario}" />
+                    <input id="idUsuario" type="number" min="1" th:field="*{idUsuario}" required />
+                    <small class="muted" th:if="${#fields.hasErrors('idUsuario')}" th:errors="*{idUsuario}"></small>
                 </div>
                 <div class="form-group">
                     <label for="tipo">Tipo</label>
-                    <select id="tipo" th:field="*{tipo}">
+                    <select id="tipo" th:field="*{tipo}" required>
                         <option value="ENTRADA">Entrada</option>
                         <option value="SALIDA">Salida</option>
                         <option value="AJUSTE">Ajuste</option>
                     </select>
+                    <small class="muted" th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}"></small>
                 </div>
                 <div class="form-group">
                     <label for="cantidad">Cantidad</label>
-                    <input id="cantidad" type="number" th:field="*{cantidad}" />
+                    <input id="cantidad" type="number" min="1" th:field="*{cantidad}" required />
+                    <small class="muted" th:if="${#fields.hasErrors('cantidad')}" th:errors="*{cantidad}"></small>
                 </div>
                 <div class="form-group">
                     <label for="descripcionMovimiento">Descripción</label>
-                    <textarea id="descripcionMovimiento" rows="4" th:field="*{descripcion}"></textarea>
+                    <textarea id="descripcionMovimiento" rows="4" maxlength="255" th:field="*{descripcion}"></textarea>
+                    <small class="muted" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></small>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar</button>

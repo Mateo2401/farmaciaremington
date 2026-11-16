@@ -3,6 +3,7 @@ package com.uniremingto.inventario.model.vo;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Transporta los datos de una venta y su estado de pago. */
 public class VentaVO {
 
     private Integer idVenta;
